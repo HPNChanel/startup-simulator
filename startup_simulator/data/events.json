@@ -1,0 +1,16 @@
+[
+  {
+    "key": "press_coverage",
+    "name": "Positive Press Coverage",
+    "description": "A major tech blog features the startup.",
+    "probability": 0.2,
+    "impact": {"brand": 15.0, "product": 5.0}
+  },
+  {
+    "key": "service_outage",
+    "name": "Service Outage",
+    "description": "An unexpected outage affects user trust.",
+    "probability": 0.15,
+    "impact": {"brand": -10.0, "morale": -12.0}
+  }
+]

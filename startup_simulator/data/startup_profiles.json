@@ -1,0 +1,10 @@
+[
+  {
+    "name": "Nimbus Analytics",
+    "metrics": {
+      "morale": 70,
+      "product": 60,
+      "brand": 40
+    }
+  }
+]
