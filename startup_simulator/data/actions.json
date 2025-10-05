@@ -1,23 +1,59 @@
 [
   {
-    "key": "networking_event",
-    "name": "Attend Networking Event",
-    "description": "Meet potential investors and partners at a local meetup.",
-    "cost": 500.0,
-    "impact": {"morale": 5.0, "brand": 8.0}
-  },
-  {
-    "key": "ship_feature",
+    "id": "ship_feature",
     "name": "Ship Major Feature",
-    "description": "Release a highly anticipated feature to users.",
-    "cost": 25000.0,
-    "impact": {"product": 12.0, "morale": -3.0}
+    "narrative": "The roadmap finally reaches a major milestone.",
+    "costs": {"balance": 22000, "team_morale": 2},
+    "effects": {"product_quality": 9.0, "users": 350},
+    "risk": {
+      "success_chance": 0.75,
+      "success": {
+        "effects": {"brand_awareness": 5.0},
+        "narrative": "Press coverage highlights the quality of the release."
+      },
+      "failure": {
+        "effects": {"team_morale": -4.0},
+        "narrative": "A post-launch outage forces an exhausting hotfix sprint."
+      }
+    },
+    "max_per_turn": 1
   },
   {
-    "key": "optimize_infra",
-    "name": "Optimize Infrastructure",
-    "description": "Reduce hosting costs through infrastructure improvements.",
-    "cost": 10000.0,
-    "impact": {"finance": 10.0}
+    "id": "marketing_blast",
+    "name": "Launch Marketing Campaign",
+    "narrative": "Fresh creative goes live across every channel.",
+    "costs": {"balance": 16000},
+    "effects": {"brand_awareness": 14.0, "users": 500},
+    "risk": {
+      "success_chance": 0.6,
+      "success": {
+        "effects": {"monthly_revenue": 6000},
+        "narrative": "Conversion rates spike as audiences respond enthusiastically."
+      },
+      "failure": {
+        "effects": {"brand_awareness": -5.0},
+        "narrative": "The messaging misses and the internet shrugs."
+      }
+    },
+    "max_per_turn": 2
+  },
+  {
+    "id": "investor_pitch",
+    "name": "Pitch to Investors",
+    "narrative": "You schedule back-to-back meetings with prominent funds.",
+    "costs": {"balance": 6000},
+    "effects": {},
+    "risk": {
+      "success_chance": 0.4,
+      "success": {
+        "effects": {"balance": 200000, "brand_awareness": 7.0},
+        "narrative": "Investors wire a term sheet before you leave the room."
+      },
+      "failure": {
+        "effects": {"team_morale": -5.0, "brand_awareness": -2.0},
+        "narrative": "The feedback is brutal and rumours circulate online."
+      }
+    },
+    "max_per_turn": 1
   }
 ]
