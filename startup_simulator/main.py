@@ -12,9 +12,9 @@ if __package__ in {None, ""}:  # pragma: no cover - convenience for script execu
     package_root = Path(__file__).resolve().parent.parent
     if str(package_root) not in sys.path:
         sys.path.insert(0, str(package_root))
-    from startup_simulator import actions, config, events, player, save_system, ui_text
+    from startup_simulator import actions, config, events, player, save_system, startup, ui_text
 else:  # pragma: no cover
-    from . import actions, config, events, player, save_system, ui_text
+    from . import actions, config, events, player, save_system, startup, ui_text
 
 
 def parse_args() -> argparse.Namespace:
@@ -53,7 +53,8 @@ def run() -> None:
     profile = load_startup_profile()
     state = initialise_player(profile)
 
-    available_actions = actions.load_actions()
+    dummy_startup = startup.Startup()
+    available_actions = actions.list_actions(dummy_startup)
     available_events = events.load_events()
 
     print(f"Loaded profile: {state.name}")
