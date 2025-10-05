@@ -1,0 +1,119 @@
+[
+  {
+    "id": "hire_staff",
+    "name": "Hire Staff",
+    "cost": 15000,
+    "effects": {
+      "team_size": 1,
+      "productivity": 5,
+      "expenses": 4000,
+      "morale": 2
+    },
+    "description": "Grow the team with a strategic hire."
+  },
+  {
+    "id": "fix_bugs",
+    "name": "Fix Critical Bugs",
+    "cost": 8000,
+    "effects": {
+      "bug_rate": -7,
+      "productivity": -2,
+      "reputation": 2
+    },
+    "description": "Focus the sprint on stability and cleanup."
+  },
+  {
+    "id": "develop_feature",
+    "name": "Develop New Feature",
+    "cost": 12000,
+    "effects": {
+      "product_level": 1,
+      "bug_rate": 3,
+      "users": 400
+    },
+    "description": "Ship a differentiated capability your customers requested."
+  },
+  {
+    "id": "marketing_campaign",
+    "name": "Run Marketing Campaign",
+    "cost": 20000,
+    "effects": {
+      "users": 1500,
+      "market_share": 1.5,
+      "reputation": 4
+    },
+    "description": "Invest in digital ads and content to capture attention."
+  },
+  {
+    "id": "pitch_investor",
+    "name": "Pitch to Investors",
+    "cost": 5000,
+    "effects": {
+      "reputation": 1
+    },
+    "risk": {
+      "success_chance": 0.45,
+      "success_effects": {
+        "balance": 120000,
+        "revenue": 6000,
+        "reputation": 4
+      },
+      "failure_effects": {
+        "reputation": -3,
+        "morale": -4
+      },
+      "success_narrative": "The pitch deck dazzles investors and you close a sizable round!",
+      "failure_narrative": "Investors pass for now, citing product-market fit concerns."
+    },
+    "description": "Seek additional capital to extend runway."
+  },
+  {
+    "id": "team_meeting",
+    "name": "Hold Team Alignment",
+    "cost": 3000,
+    "effects": {
+      "morale": 10,
+      "productivity": 5,
+      "bug_rate": -2
+    },
+    "description": "Host an offsite to reinforce mission and collaboration."
+  },
+  {
+    "id": "cut_costs",
+    "name": "Cut Operational Costs",
+    "cost": 0,
+    "effects": {
+      "expenses": -5000,
+      "morale": -6,
+      "productivity": -5
+    },
+    "description": "Trim vendors and perks to slow burn."
+  },
+  {
+    "id": "launch_product_line",
+    "name": "Launch New Product Line",
+    "cost": 40000,
+    "effects": {
+      "product_level": 2,
+      "revenue": 8000,
+      "bug_rate": 6,
+      "market_share": 3
+    },
+    "risk": {
+      "success_chance": 0.6,
+      "success_effects": {
+        "revenue": 12000,
+        "users": 2500,
+        "reputation": 5
+      },
+      "failure_effects": {
+        "bug_rate": 5,
+        "reputation": -4,
+        "users": -1200
+      },
+      "success_narrative": "The launch delights customers and surges organic adoption!",
+      "failure_narrative": "Launch glitches frustrate early adopters and slow growth."
+    },
+    "description": "Introduce a complementary offering to diversify revenue."
+  }
+]
