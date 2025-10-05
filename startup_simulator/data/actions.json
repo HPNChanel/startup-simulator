@@ -1,0 +1,23 @@
+[
+  {
+    "key": "networking_event",
+    "name": "Attend Networking Event",
+    "description": "Meet potential investors and partners at a local meetup.",
+    "cost": 500.0,
+    "impact": {"morale": 5.0, "brand": 8.0}
+  },
+  {
+    "key": "ship_feature",
+    "name": "Ship Major Feature",
+    "description": "Release a highly anticipated feature to users.",
+    "cost": 25000.0,
+    "impact": {"product": 12.0, "morale": -3.0}
+  },
+  {
+    "key": "optimize_infra",
+    "name": "Optimize Infrastructure",
+    "description": "Reduce hosting costs through infrastructure improvements.",
+    "cost": 10000.0,
+    "impact": {"finance": 10.0}
+  }
+]

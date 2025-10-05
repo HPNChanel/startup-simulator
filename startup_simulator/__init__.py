@@ -1,5 +1,14 @@
 """Startup Simulator package."""
+from __future__ import annotations
 
-from .game import StartupSimulator
+from . import actions, config, events, finance, player, save_system, ui_text
 
-__all__ = ["StartupSimulator"]
+__all__ = [
+    "actions",
+    "config",
+    "events",
+    "finance",
+    "player",
+    "save_system",
+    "ui_text",
+]
