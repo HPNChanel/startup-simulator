@@ -1,7 +1,7 @@
 """Startup Simulator package."""
 from __future__ import annotations
 
-from . import actions, config, events, finance, player, save_system, ui_text
+from . import actions, config, events, finance, player, save_system, startup, ui_text
 
 __all__ = [
     "actions",
@@ -10,5 +10,6 @@ __all__ = [
     "finance",
     "player",
     "save_system",
+    "startup",
     "ui_text",
 ]
