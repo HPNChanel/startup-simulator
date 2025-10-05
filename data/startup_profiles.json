@@ -1,0 +1,56 @@
+[
+  {
+    "id": "balanced_founders",
+    "name": "Balanced Founders",
+    "description": "A pragmatic founding duo with strong product and go-to-market instincts.",
+    "stats": {
+      "balance": 200000,
+      "revenue": 12000,
+      "expenses": 32000,
+      "product_level": 1,
+      "bug_rate": 9,
+      "team_size": 5,
+      "morale": 72,
+      "productivity": 80,
+      "reputation": 52,
+      "users": 5500,
+      "market_share": 2.5
+    }
+  },
+  {
+    "id": "growth_hacker",
+    "name": "Growth Hacker",
+    "description": "An ex-accelerator alum obsessed with viral loops and aggressive acquisition.",
+    "stats": {
+      "balance": 160000,
+      "revenue": 15000,
+      "expenses": 36000,
+      "product_level": 1,
+      "bug_rate": 14,
+      "team_size": 4,
+      "morale": 68,
+      "productivity": 78,
+      "reputation": 48,
+      "users": 9000,
+      "market_share": 3.5
+    }
+  },
+  {
+    "id": "compliance_first",
+    "name": "Compliance First",
+    "description": "Former bankers who prioritize trust, safety, and regulatory mastery above all else.",
+    "stats": {
+      "balance": 230000,
+      "revenue": 9000,
+      "expenses": 28000,
+      "product_level": 1,
+      "bug_rate": 7,
+      "team_size": 6,
+      "morale": 74,
+      "productivity": 82,
+      "reputation": 60,
+      "users": 4800,
+      "market_share": 1.8
+    }
+  }
+]
