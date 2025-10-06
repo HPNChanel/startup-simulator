@@ -1,16 +1,90 @@
 [
   {
-    "key": "press_coverage",
-    "name": "Positive Press Coverage",
-    "description": "A major tech blog features the startup.",
-    "probability": 0.2,
-    "impact": {"brand": 15.0, "product": 5.0}
+    "id": "app_store_feature",
+    "name": "App Store Feature",
+    "narrative": "A platform partner highlights your product in a curated collection.",
+    "trigger_chance": 0.08,
+    "duration_turns": 2,
+    "effects": {"brand_awareness": 9.0, "users": 280, "monthly_revenue": 4000}
   },
   {
-    "key": "service_outage",
-    "name": "Service Outage",
-    "description": "An unexpected outage affects user trust.",
-    "probability": 0.15,
-    "impact": {"brand": -10.0, "morale": -12.0}
+    "id": "cloud_credit_grant",
+    "name": "Cloud Credit Grant",
+    "narrative": "Your infrastructure provider awards a grant of platform credits.",
+    "trigger_chance": 0.1,
+    "duration_turns": 3,
+    "effects": {"balance": 20000, "monthly_expenses": -5000}
+  },
+  {
+    "id": "competitor_feature_parity",
+    "name": "Competitor Ships Feature Parity",
+    "narrative": "A rival launches a clone of your flagship functionality.",
+    "trigger_chance": 0.14,
+    "duration_turns": 2,
+    "effects": {"brand_awareness": -5.0, "product_quality": -3.0}
+  },
+  {
+    "id": "customer_advocacy_wave",
+    "name": "Customer Advocacy Wave",
+    "narrative": "Power users rave about you in forums and review sites.",
+    "trigger_chance": 0.09,
+    "duration_turns": 2,
+    "effects": {"churn_rate": -0.008, "brand_awareness": 6.0, "team_morale": 3.0}
+  },
+  {
+    "id": "data_breach",
+    "name": "Minor Data Breach",
+    "narrative": "An incident exposes a limited subset of user data before being contained.",
+    "trigger_chance": 0.07,
+    "duration_turns": 3,
+    "effects": {"brand_awareness": -12.0, "users": -180, "churn_rate": 0.02}
+  },
+  {
+    "id": "growth_award",
+    "name": "Industry Growth Award",
+    "narrative": "Analysts recognise your momentum with a niche award.",
+    "trigger_chance": 0.06,
+    "duration_turns": 1,
+    "effects": {"brand_awareness": 8.0, "monthly_revenue": 5000}
+  },
+  {
+    "id": "hiring_frenzy",
+    "name": "Hiring Frenzy",
+    "narrative": "A wave of strong candidates accept offers all at once.",
+    "trigger_chance": 0.08,
+    "duration_turns": 3,
+    "effects": {"headcount": 3, "monthly_expenses": 9000, "team_morale": 2.0}
+  },
+  {
+    "id": "infrastructure_glitch",
+    "name": "Infrastructure Glitch",
+    "narrative": "A finicky dependency causes intermittent downtime for some customers.",
+    "trigger_chance": 0.11,
+    "duration_turns": 2,
+    "effects": {"product_quality": -4.0, "monthly_revenue": -5000, "team_morale": -3.0}
+  },
+  {
+    "id": "press_spotlight",
+    "name": "Press Spotlight",
+    "narrative": "A prominent tech journalist publishes a glowing feature article.",
+    "trigger_chance": 0.15,
+    "duration_turns": 1,
+    "effects": {"brand_awareness": 10.0, "users": 320}
+  },
+  {
+    "id": "regulatory_audit",
+    "name": "Regulatory Audit",
+    "narrative": "Regulators request documentation, slowing several projects.",
+    "trigger_chance": 0.05,
+    "duration_turns": 2,
+    "effects": {"balance": -15000, "product_quality": -2.0, "team_morale": -2.0}
+  },
+  {
+    "id": "support_ticket_surge",
+    "name": "Support Ticket Surge",
+    "narrative": "A flurry of customer issues floods the support queue.",
+    "trigger_chance": 0.12,
+    "duration_turns": 2,
+    "effects": {"team_morale": -5.0, "product_quality": -2.0, "churn_rate": 0.01}
   }
 ]

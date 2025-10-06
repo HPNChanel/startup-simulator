@@ -4,7 +4,7 @@
     "name": "Ship Major Feature",
     "narrative": "The roadmap finally reaches a major milestone.",
     "costs": {"balance": 22000, "team_morale": 2},
-    "effects": {"product_quality": 9.0, "users": 350},
+    "effects": {"product_quality": 9.0, "users": 320},
     "risk": {
       "success_chance": 0.75,
       "success": {
@@ -22,16 +22,16 @@
     "id": "marketing_blast",
     "name": "Launch Marketing Campaign",
     "narrative": "Fresh creative goes live across every channel.",
-    "costs": {"balance": 16000},
-    "effects": {"brand_awareness": 14.0, "users": 500},
+    "costs": {"balance": 15000},
+    "effects": {"brand_awareness": 12.0, "users": 450},
     "risk": {
       "success_chance": 0.6,
       "success": {
-        "effects": {"monthly_revenue": 6000},
+        "effects": {"monthly_revenue": 5000},
         "narrative": "Conversion rates spike as audiences respond enthusiastically."
       },
       "failure": {
-        "effects": {"brand_awareness": -5.0},
+        "effects": {"brand_awareness": -4.0},
         "narrative": "The messaging misses and the internet shrugs."
       }
     },
@@ -44,14 +44,114 @@
     "costs": {"balance": 6000},
     "effects": {},
     "risk": {
-      "success_chance": 0.4,
+      "success_chance": 0.35,
       "success": {
-        "effects": {"balance": 200000, "brand_awareness": 7.0},
+        "effects": {"balance": 150000, "brand_awareness": 6.0},
         "narrative": "Investors wire a term sheet before you leave the room."
       },
       "failure": {
-        "effects": {"team_morale": -5.0, "brand_awareness": -2.0},
+        "effects": {"team_morale": -4.0, "brand_awareness": -1.0},
         "narrative": "The feedback is brutal and rumours circulate online."
+      }
+    },
+    "max_per_turn": 1
+  },
+  {
+    "id": "user_research_sprint",
+    "name": "Run User Research Sprint",
+    "narrative": "Researchers dig into interviews and usability tests for fresh insights.",
+    "costs": {"balance": 5000},
+    "effects": {"product_quality": 4.0, "churn_rate": -0.005, "team_morale": 2.0},
+    "max_per_turn": 1
+  },
+  {
+    "id": "build_referral_program",
+    "name": "Build Referral Program",
+    "narrative": "You launch incentives to encourage organic invites.",
+    "costs": {"balance": 7000},
+    "effects": {"users": 220, "growth_rate": 0.01, "brand_awareness": 3.0},
+    "risk": {
+      "success_chance": 0.55,
+      "success": {
+        "effects": {"monthly_revenue": 3000},
+        "narrative": "Early adopters share their invite codes broadly."
+      },
+      "failure": {
+        "effects": {"churn_rate": 0.004},
+        "narrative": "Rewards confuse users and some drift away."
+      }
+    },
+    "max_per_turn": 1
+  },
+  {
+    "id": "optimize_infrastructure",
+    "name": "Optimize Infrastructure",
+    "narrative": "Engineers refactor critical services to lower hosting costs.",
+    "costs": {"balance": 9000},
+    "effects": {"product_quality": 3.0, "monthly_expenses": -4000},
+    "risk": {
+      "success_chance": 0.7,
+      "success": {
+        "effects": {"balance": 2000},
+        "narrative": "Performance improvements drop the cloud bill immediately."
+      },
+      "failure": {
+        "effects": {"product_quality": -2.0, "monthly_expenses": 2000},
+        "narrative": "An unexpected regression forces you to overprovision servers."
+      }
+    },
+    "max_per_turn": 1
+  },
+  {
+    "id": "host_community_event",
+    "name": "Host Community Event",
+    "narrative": "You bring power users together for demos, feedback, and camaraderie.",
+    "costs": {"balance": 4500},
+    "effects": {"brand_awareness": 5.0, "users": 120, "team_morale": 3.0},
+    "max_per_turn": 2
+  },
+  {
+    "id": "renegotiate_vendors",
+    "name": "Renegotiate Vendor Contracts",
+    "narrative": "Finance digs into vendor relationships searching for savings.",
+    "costs": {"team_morale": 3.0},
+    "effects": {"monthly_expenses": -6000, "debt": -5000},
+    "max_per_turn": 1
+  },
+  {
+    "id": "restructure_pricing",
+    "name": "Experiment with Pricing",
+    "narrative": "You A/B test a new pricing tier for your product.",
+    "costs": {},
+    "effects": {},
+    "risk": {
+      "success_chance": 0.5,
+      "success": {
+        "effects": {"monthly_revenue": 7000, "churn_rate": -0.004},
+        "narrative": "Customers adopt the new tier and churn drops."
+      },
+      "failure": {
+        "effects": {"monthly_revenue": -4000, "brand_awareness": -3.0},
+        "narrative": "Pricing confusion sparks frustration on social media."
+      }
+    },
+    "max_per_turn": 1
+  },
+  {
+    "id": "hire_growth_lead",
+    "name": "Hire Growth Lead",
+    "narrative": "You recruit a specialist to focus on onboarding and funnels.",
+    "costs": {"balance": 12000},
+    "effects": {"monthly_expenses": 6000, "brand_awareness": 4.0, "growth_rate": 0.015},
+    "risk": {
+      "success_chance": 0.65,
+      "success": {
+        "effects": {"team_morale": 2.0},
+        "narrative": "The new hire lifts energy across product and marketing."
+      },
+      "failure": {
+        "effects": {"team_morale": -3.0},
+        "narrative": "The hire struggles to ramp and frustrates the team."
       }
     },
     "max_per_turn": 1
