@@ -52,6 +52,20 @@ ACTION_LIMIT_RANGE: tuple[int, int] = (1, 3)
 EVENT_PROBABILITY_WEIGHT: float = 0.35
 
 # ---------------------------------------------------------------------------
+# Optional monthly economy variance
+# ---------------------------------------------------------------------------
+
+# Set ``ECONOMY_TICK_ENABLED`` to ``True`` to introduce a gentle amount of
+# variance to the simulated economy at the start of each month. Designers can
+# fine-tune the magnitude of the effect using the percentage ranges below. The
+# jitter is applied multiplicatively, so values represent +/- percentage
+# adjustments. Keeping the range small (well under 5%) is recommended to avoid
+# destabilising the balancing tuned for the deterministic economy.
+ECONOMY_TICK_ENABLED: bool = False
+ECONOMY_TICK_REVENUE_VARIANCE: tuple[float, float] = (-0.01, 0.015)
+ECONOMY_TICK_EXPENSE_VARIANCE: tuple[float, float] = (-0.008, 0.012)
+
+# ---------------------------------------------------------------------------
 # Generic numeric ranges used for clamping
 # ---------------------------------------------------------------------------
 
@@ -110,6 +124,9 @@ __all__ = [
     "DEFAULT_ACTIONS_PER_TURN",
     "ACTION_LIMIT_RANGE",
     "EVENT_PROBABILITY_WEIGHT",
+    "ECONOMY_TICK_ENABLED",
+    "ECONOMY_TICK_REVENUE_VARIANCE",
+    "ECONOMY_TICK_EXPENSE_VARIANCE",
     "PROBABILITY_RANGE",
     "METRIC_VALUE_RANGE",
     "STARTUP_INT_BOUNDS",
