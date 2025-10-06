@@ -14,40 +14,18 @@ if __package__ in {None, ""}:  # pragma: no cover - convenience for script execu
     package_root = Path(__file__).resolve().parent.parent
     if str(package_root) not in sys.path:
         sys.path.insert(0, str(package_root))
-    from startup_simulator import actions, config, events, finance, save_system, startup, ui_text
+    from startup_simulator import (
+        actions,
+        config,
+        events,
+        finance,
+        save_system,
+        startup,
+        terminal,
+        ui_text,
+    )
 else:  # pragma: no cover
-    from . import actions, config, events, finance, save_system, startup, ui_text
-
-
-class AnsiPalette:
-    """Minimal helper for colouring CLI output."""
-
-    def __init__(self, enabled: bool) -> None:
-        self.enabled = enabled
-
-    def _wrap(self, text: str, code: str) -> str:
-        if not self.enabled or not text:
-            return text
-        reset = "\033[0m"
-        return f"{code}{text}{reset}"
-
-    def banner(self, text: str) -> str:
-        return self._wrap(text, "\033[95m")
-
-    def section(self, text: str) -> str:
-        return self._wrap(text, "\033[94m")
-
-    def prompt(self, text: str) -> str:
-        return self._wrap(text, "\033[92m")
-
-    def accent(self, text: str) -> str:
-        return self._wrap(text, "\033[96m")
-
-    def warning(self, text: str) -> str:
-        return self._wrap(text, "\033[93m")
-
-
-PALETTE = AnsiPalette(enabled=False)
+    from . import actions, config, events, finance, save_system, startup, terminal, ui_text
 
 
 class SaveAndQuit(Exception):
@@ -148,7 +126,7 @@ def choose_startup_profile(
                 return profile
         available = ", ".join(str(p.get("name", "Profile")) for p in profiles)
         print(
-            PALETTE.warning(
+            terminal.warning(
                 (
                     f"Profile '{preselected}' not found. Available options: {available}. "
                     "Choose one of the options below."
@@ -157,7 +135,7 @@ def choose_startup_profile(
         )
         print()
 
-    print(PALETTE.section(_render_profile_menu(profiles)))
+    print(terminal.header(_render_profile_menu(profiles)))
     while True:
         choice = input("Selection: ").strip()
         if not choice:
@@ -192,7 +170,7 @@ def _render_action_prompt(max_actions: int) -> str:
     extra = (
         "Type 'S' to save & quit or 'Q' to exit without saving at any prompt."
     )
-    return PALETTE.prompt(f"{base}\n{extra}")
+    return f"{base}\n{extra}"
 
 
 def _parse_action_selection(raw: str, total: int) -> List[int]:
@@ -308,7 +286,7 @@ def _check_endings(state: startup.Startup) -> tuple[str, str] | None:
 
 def _print_turn_intro(state: startup.Startup) -> None:
     header = f"\n=== Month {state.turn} ==="
-    print(PALETTE.section(header))
+    print(terminal.header(header))
     print(ui_text.render_dashboard(state))
 
 
@@ -316,7 +294,7 @@ def _print_messages(title: str, messages: Iterable[str]) -> None:
     collected = [msg for msg in messages if msg]
     if not collected:
         return
-    print(PALETTE.section(f"\n{title}"))
+    print(terminal.header(f"\n{title}"))
     for message in collected:
         wrapped = textwrap.fill(message, width=80, subsequent_indent="    ")
         print(f"  • {wrapped}")
@@ -326,11 +304,10 @@ def run() -> None:
     """Run the main CLI loop."""
 
     args = parse_args()
-    global PALETTE
-    PALETTE = AnsiPalette(enabled=not args.no_color and sys.stdout.isatty())
+    terminal.configure_color(enabled=not args.no_color and sys.stdout.isatty())
     rng = random.Random(args.seed)
 
-    print(PALETTE.banner(ui_text.render_title()))
+    print(terminal.title(ui_text.render_title()))
 
     try:
         profiles = _load_startup_profiles()
@@ -350,12 +327,12 @@ def run() -> None:
         max_actions = min(max_actions, maximum_limit)
     if args.max_actions and max_actions != args.max_actions:
         print(
-            PALETTE.warning(
+            terminal.warning(
                 f"Action limit clamped to {max_actions} based on configuration constraints."
             )
         )
 
-    print(PALETTE.accent(f"\nYou selected: {profile.get('name', 'Unknown Startup')}"))
+    print(f"\nYou selected: {profile.get('name', 'Unknown Startup')}")
 
     try:
         while True:
@@ -373,14 +350,10 @@ def run() -> None:
                 selections = prompt_actions(available, max_actions)
             except SaveAndQuit:
                 save_system.save_game(state)
-                print(
-                    PALETTE.accent(
-                        f"Game saved to {config.AUTOSAVE_FILENAME}. Goodbye!"
-                    )
-                )
+                print(f"Game saved to {config.AUTOSAVE_FILENAME}. Goodbye!")
                 return
             except QuitWithoutSaving:
-                print(PALETTE.warning("Exiting without saving. Goodbye!"))
+                print(terminal.warning("Exiting without saving. Goodbye!"))
                 return
 
             narratives = _apply_actions(state, selections, rng, max_actions=max_actions)
@@ -394,27 +367,23 @@ def run() -> None:
             ending = _check_endings(state)
             if ending:
                 title, description = ending
-                print(PALETTE.banner("\n=== Simulation Complete ==="))
-                print(PALETTE.accent(f"Ending: {title}"))
+                print(terminal.title("\n=== Simulation Complete ==="))
+                print(f"Ending: {title}")
                 print(textwrap.fill(description, width=80))
                 print("\nFinal Company Snapshot:\n")
                 print(ui_text.render_dashboard(state))
                 if args.autosave:
                     save_system.save_game(state)
-                    print(
-                        PALETTE.accent(
-                            f"\nFinal state autosaved to {config.AUTOSAVE_FILENAME}."
-                        )
-                    )
+                    print(f"\nFinal state autosaved to {config.AUTOSAVE_FILENAME}.")
                 return
 
             if args.autosave:
                 save_system.save_game(state)
-                print(PALETTE.accent(f"Autosaved to {config.AUTOSAVE_FILENAME}."))
+                print(f"Autosaved to {config.AUTOSAVE_FILENAME}.")
 
             state.turn += 1
     except KeyboardInterrupt:
-        print(PALETTE.warning("\nSession interrupted. Goodbye!"))
+        print(terminal.warning("\nSession interrupted. Goodbye!"))
 
 
 def main() -> None:
