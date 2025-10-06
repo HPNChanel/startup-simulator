@@ -2,13 +2,12 @@ from __future__ import annotations
 
 import random
 
-import pytest
-
 from startup_simulator import actions
 from startup_simulator.startup import Startup
+from startup_simulator.tests.utils import PatchManager, expect_raises
 
 
-def test_list_actions_filters_unaffordable(monkeypatch):
+def test_list_actions_filters_unaffordable() -> None:
     affordable = actions.Action(
         id="affordable",
         name="Affordable",
@@ -24,13 +23,15 @@ def test_list_actions_filters_unaffordable(monkeypatch):
         effects={},
     )
     registry = {action.id: action for action in (affordable, pricey)}
-    monkeypatch.setattr(actions, "ACTION_REGISTRY", registry)
 
-    available = actions.list_actions(Startup(balance=5_000))
+    with PatchManager() as patches:
+        patches.setattr(actions, "ACTION_REGISTRY", registry)
+        available = actions.list_actions(Startup(balance=5_000))
+
     assert [action.name for action in available] == ["Affordable"]
 
 
-def test_apply_action_deducts_cost_and_clamps(monkeypatch):
+def test_apply_action_deducts_cost_and_clamps() -> None:
     action = actions.Action(
         id="clamp_test",
         name="Clamp Test",
@@ -38,17 +39,17 @@ def test_apply_action_deducts_cost_and_clamps(monkeypatch):
         costs={"balance": 500},
         effects={"product_quality": 150.0},
     )
-    monkeypatch.setattr(actions, "ACTION_REGISTRY", {action.id: action})
-
-    state = Startup(balance=1_000, product_quality=80.0)
-    updated, narrative = actions.apply_action(state, "clamp_test", random.Random(1))
+    with PatchManager() as patches:
+        patches.setattr(actions, "ACTION_REGISTRY", {action.id: action})
+        state = Startup(balance=1_000, product_quality=80.0)
+        updated, narrative = actions.apply_action(state, "clamp_test", random.Random(1))
 
     assert updated.balance == 500
     assert updated.product_quality == 100.0
     assert narrative == "Testing narrative."
 
 
-def test_apply_action_handles_risk_success(monkeypatch):
+def test_apply_action_handles_risk_success() -> None:
     risky = actions.Action(
         id="risky",
         name="Risky",
@@ -56,7 +57,7 @@ def test_apply_action_handles_risk_success(monkeypatch):
         costs={},
         effects={"brand_awareness": 1.0},
         risk={
-            "success_chance": 0.9,
+            "success_chance": 0.99,
             "success": {
                 "effects": {"balance": 5_000},
                 "narrative": "It works!",
@@ -67,18 +68,18 @@ def test_apply_action_handles_risk_success(monkeypatch):
             },
         },
     )
-    monkeypatch.setattr(actions, "ACTION_REGISTRY", {risky.id: risky})
-
-    state = Startup(balance=100)
-    rng = random.Random(1)  # ensures success because 0.134 < 0.9
-    updated, narrative = actions.apply_action(state, "risky", rng)
+    with PatchManager() as patches:
+        patches.setattr(actions, "ACTION_REGISTRY", {risky.id: risky})
+        state = Startup(balance=100)
+        rng = random.Random(1234)
+        updated, narrative = actions.apply_action(state, "risky", rng)
 
     assert updated.balance == 5_100
     assert updated.brand_awareness > 1.0
     assert "It works!" in narrative
 
 
-def test_apply_action_handles_risk_failure(monkeypatch):
+def test_apply_action_handles_risk_failure() -> None:
     risky = actions.Action(
         id="risky_fail",
         name="Risky Fail",
@@ -86,7 +87,7 @@ def test_apply_action_handles_risk_failure(monkeypatch):
         costs={},
         effects={},
         risk={
-            "success_chance": 0.0,
+            "success_chance": 0.5,
             "success": {
                 "effects": {"balance": 5_000},
             },
@@ -96,21 +97,21 @@ def test_apply_action_handles_risk_failure(monkeypatch):
             },
         },
     )
-    monkeypatch.setattr(actions, "ACTION_REGISTRY", {risky.id: risky})
-
-    state = Startup(team_morale=50.0)
-    updated, narrative = actions.apply_action(state, "risky_fail", random.Random(5))
+    with PatchManager() as patches:
+        patches.setattr(actions, "ACTION_REGISTRY", {risky.id: risky})
+        state = Startup(team_morale=50.0)
+        updated, narrative = actions.apply_action(state, "risky_fail", random.Random(1234))
 
     assert updated.team_morale == 45.0
     assert narrative.endswith("It fails badly.")
 
 
-def test_unknown_action_raises():
-    with pytest.raises(ValueError, match="Unknown action id: does_not_exist"):
+def test_unknown_action_raises() -> None:
+    with expect_raises(ValueError, "Unknown action id: does_not_exist"):
         actions.apply_action(Startup(), "does_not_exist", random.Random(0))
 
 
-def test_validate_action_limit(monkeypatch):
+def test_validate_action_limit() -> None:
     limited = actions.Action(
         id="limited",
         name="Limited",
@@ -119,12 +120,11 @@ def test_validate_action_limit(monkeypatch):
         effects={},
         max_per_turn=1,
     )
-    monkeypatch.setattr(actions, "ACTION_REGISTRY", {limited.id: limited})
 
     actions.validate_action_limit({"limited": 0}, limited)
 
-    with pytest.raises(ValueError):
+    with expect_raises(ValueError):
         actions.validate_action_limit({"limited": 1}, limited)
 
-    with pytest.raises(ValueError):
+    with expect_raises(ValueError):
         actions.validate_action_limit({"limited": 0, "other": 3}, limited, max_actions=1)
