@@ -4,20 +4,50 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import sys
 import textwrap
 from collections import Counter
 from pathlib import Path
 from typing import Dict, Iterable, List
 
 if __package__ in {None, ""}:  # pragma: no cover - convenience for script execution
-    import sys
-
     package_root = Path(__file__).resolve().parent.parent
     if str(package_root) not in sys.path:
         sys.path.insert(0, str(package_root))
     from startup_simulator import actions, config, events, finance, save_system, startup, ui_text
 else:  # pragma: no cover
     from . import actions, config, events, finance, save_system, startup, ui_text
+
+
+class AnsiPalette:
+    """Minimal helper for colouring CLI output."""
+
+    def __init__(self, enabled: bool) -> None:
+        self.enabled = enabled
+
+    def _wrap(self, text: str, code: str) -> str:
+        if not self.enabled or not text:
+            return text
+        reset = "\033[0m"
+        return f"{code}{text}{reset}"
+
+    def banner(self, text: str) -> str:
+        return self._wrap(text, "\033[95m")
+
+    def section(self, text: str) -> str:
+        return self._wrap(text, "\033[94m")
+
+    def prompt(self, text: str) -> str:
+        return self._wrap(text, "\033[92m")
+
+    def accent(self, text: str) -> str:
+        return self._wrap(text, "\033[96m")
+
+    def warning(self, text: str) -> str:
+        return self._wrap(text, "\033[93m")
+
+
+PALETTE = AnsiPalette(enabled=False)
 
 
 class SaveAndQuit(Exception):
@@ -31,7 +61,10 @@ class QuitWithoutSaving(Exception):
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments for the CLI."""
 
-    parser = argparse.ArgumentParser(description="Run the Startup Simulator prototype.")
+    parser = argparse.ArgumentParser(
+        description="Run the Startup Simulator prototype.",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter,
+    )
     parser.add_argument(
         "--seed",
         type=int,
@@ -43,7 +76,30 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Enable autosave using the configured save filename.",
     )
-    return parser.parse_args()
+    parser.add_argument(
+        "--profile",
+        metavar="NAME",
+        help="Start from the profile with the given name (case insensitive).",
+    )
+    parser.add_argument(
+        "--max-actions",
+        type=int,
+        metavar="N",
+        help=(
+            "Override the number of actions available each turn. "
+            "Values are clamped to the configured action limit range."
+        ),
+    )
+    parser.add_argument(
+        "--no-color",
+        action="store_true",
+        help="Disable ANSI colour formatting in CLI output.",
+    )
+
+    args = parser.parse_args()
+    if args.max_actions is not None and args.max_actions < 1:
+        parser.error("--max-actions must be a positive integer.")
+    return args
 
 
 def _load_startup_profiles() -> List[Dict[str, object]]:
@@ -77,11 +133,31 @@ def _render_profile_menu(profiles: List[Dict[str, object]]) -> str:
     return "\n".join(lines).rstrip()
 
 
-def choose_startup_profile() -> Dict[str, object]:
+def choose_startup_profile(
+    profiles: List[Dict[str, object]],
+    *,
+    preselected: str | None = None,
+) -> Dict[str, object]:
     """Prompt the player to select a startup profile."""
 
-    profiles = _load_startup_profiles()
-    print(_render_profile_menu(profiles))
+    if preselected:
+        target = preselected.casefold()
+        for profile in profiles:
+            name = str(profile.get("name", "")).casefold()
+            if name == target:
+                return profile
+        available = ", ".join(str(p.get("name", "Profile")) for p in profiles)
+        print(
+            PALETTE.warning(
+                (
+                    f"Profile '{preselected}' not found. Available options: {available}. "
+                    "Choose one of the options below."
+                )
+            )
+        )
+        print()
+
+    print(PALETTE.section(_render_profile_menu(profiles)))
     while True:
         choice = input("Selection: ").strip()
         if not choice:
@@ -116,7 +192,7 @@ def _render_action_prompt(max_actions: int) -> str:
     extra = (
         "Type 'S' to save & quit or 'Q' to exit without saving at any prompt."
     )
-    return f"{base}\n{extra}"
+    return PALETTE.prompt(f"{base}\n{extra}")
 
 
 def _parse_action_selection(raw: str, total: int) -> List[int]:
@@ -232,7 +308,7 @@ def _check_endings(state: startup.Startup) -> tuple[str, str] | None:
 
 def _print_turn_intro(state: startup.Startup) -> None:
     header = f"\n=== Month {state.turn} ==="
-    print(header)
+    print(PALETTE.section(header))
     print(ui_text.render_dashboard(state))
 
 
@@ -240,7 +316,7 @@ def _print_messages(title: str, messages: Iterable[str]) -> None:
     collected = [msg for msg in messages if msg]
     if not collected:
         return
-    print(f"\n{title}")
+    print(PALETTE.section(f"\n{title}"))
     for message in collected:
         wrapped = textwrap.fill(message, width=80, subsequent_indent="    ")
         print(f"  • {wrapped}")
@@ -250,12 +326,15 @@ def run() -> None:
     """Run the main CLI loop."""
 
     args = parse_args()
+    global PALETTE
+    PALETTE = AnsiPalette(enabled=not args.no_color and sys.stdout.isatty())
     rng = random.Random(args.seed)
 
-    print(ui_text.render_title())
+    print(PALETTE.banner(ui_text.render_title()))
 
     try:
-        profile = choose_startup_profile()
+        profiles = _load_startup_profiles()
+        profile = choose_startup_profile(profiles, preselected=args.profile)
     except SaveAndQuit:
         print("No game in progress to save. Exiting.")
         return
@@ -265,11 +344,18 @@ def run() -> None:
 
     state = initialise_startup(profile, args.seed)
     minimum_limit, maximum_limit = config.ACTION_LIMIT_RANGE
-    max_actions = max(minimum_limit, config.DEFAULT_ACTIONS_PER_TURN)
+    desired_actions = args.max_actions or config.DEFAULT_ACTIONS_PER_TURN
+    max_actions = max(desired_actions, minimum_limit)
     if maximum_limit is not None:
-        max_actions = min(maximum_limit, max_actions)
+        max_actions = min(max_actions, maximum_limit)
+    if args.max_actions and max_actions != args.max_actions:
+        print(
+            PALETTE.warning(
+                f"Action limit clamped to {max_actions} based on configuration constraints."
+            )
+        )
 
-    print(f"\nYou selected: {profile.get('name', 'Unknown Startup')}")
+    print(PALETTE.accent(f"\nYou selected: {profile.get('name', 'Unknown Startup')}"))
 
     try:
         while True:
@@ -287,10 +373,14 @@ def run() -> None:
                 selections = prompt_actions(available, max_actions)
             except SaveAndQuit:
                 save_system.save_game(state)
-                print(f"Game saved to {config.AUTOSAVE_FILENAME}. Goodbye!")
+                print(
+                    PALETTE.accent(
+                        f"Game saved to {config.AUTOSAVE_FILENAME}. Goodbye!"
+                    )
+                )
                 return
             except QuitWithoutSaving:
-                print("Exiting without saving. Goodbye!")
+                print(PALETTE.warning("Exiting without saving. Goodbye!"))
                 return
 
             narratives = _apply_actions(state, selections, rng, max_actions=max_actions)
@@ -304,23 +394,27 @@ def run() -> None:
             ending = _check_endings(state)
             if ending:
                 title, description = ending
-                print("\n=== Simulation Complete ===")
-                print(f"Ending: {title}")
+                print(PALETTE.banner("\n=== Simulation Complete ==="))
+                print(PALETTE.accent(f"Ending: {title}"))
                 print(textwrap.fill(description, width=80))
                 print("\nFinal Company Snapshot:\n")
                 print(ui_text.render_dashboard(state))
                 if args.autosave:
                     save_system.save_game(state)
-                    print(f"\nFinal state autosaved to {config.AUTOSAVE_FILENAME}.")
+                    print(
+                        PALETTE.accent(
+                            f"\nFinal state autosaved to {config.AUTOSAVE_FILENAME}."
+                        )
+                    )
                 return
 
             if args.autosave:
                 save_system.save_game(state)
-                print(f"Autosaved to {config.AUTOSAVE_FILENAME}.")
+                print(PALETTE.accent(f"Autosaved to {config.AUTOSAVE_FILENAME}."))
 
             state.turn += 1
     except KeyboardInterrupt:
-        print("\nSession interrupted. Goodbye!")
+        print(PALETTE.warning("\nSession interrupted. Goodbye!"))
 
 
 def main() -> None:
