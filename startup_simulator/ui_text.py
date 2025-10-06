@@ -10,7 +10,7 @@ from __future__ import annotations
 import textwrap
 from typing import Iterable, Mapping
 
-from . import config
+from . import config, terminal
 from .actions import Action
 from .startup import Startup
 
@@ -140,7 +140,7 @@ def render_dashboard(startup: Startup) -> str:
     header = "Company Dashboard"
     bar = "-" * max(len(header), label_width + value_width + 3)
 
-    lines = [header, bar]
+    lines = [terminal.header(header), bar]
     for label, value in formatted_items:
         lines.append(f"{label:<{label_width}} : {value:>{value_width}}")
     return "\n".join(lines)
@@ -161,7 +161,7 @@ def render_events(narratives: list[str]) -> str:
             subsequent_indent="    ",
         )
         wrapped.append(paragraph)
-    return "\n".join(["Recent Events:"] + wrapped)
+    return "\n".join([terminal.header("Recent Events:")] + wrapped)
 
 
 def _format_changes(changes: Mapping[str, float | int], *, invert: bool = False) -> str:
@@ -179,7 +179,7 @@ def render_actions_menu(actions: list[Action]) -> str:
     if not actions:
         return "No actions are currently available."
 
-    lines = ["Available Actions:"]
+    lines = [terminal.header("Available Actions:")]
     for index, action in enumerate(actions, start=1):
         lines.append(f"{index}. {action.name}")
         if action.narrative:
