@@ -1,0 +1,3 @@
+# The simulator relies solely on the Python standard library.
+# This placeholder makes it explicit that no third-party packages
+# need to be installed to run the game locally.
