@@ -178,14 +178,18 @@ def prompt_actions(available: List[actions.Action], max_actions: int) -> List[ac
 
 
 def _apply_actions(
-    state: startup.Startup, selections: Iterable[actions.Action], rng: random.Random
+    state: startup.Startup,
+    selections: Iterable[actions.Action],
+    rng: random.Random,
+    max_actions: int | None = None,
 ) -> List[str]:
     """Apply the selected actions to the startup and return narratives."""
 
     narratives: List[str] = []
     per_turn_counts: Counter[str] = Counter()
+    allowed_actions = max_actions if max_actions is not None else config.DEFAULT_ACTIONS_PER_TURN
     for action in selections:
-        actions.validate_action_limit(per_turn_counts, action, max_actions=3)
+        actions.validate_action_limit(per_turn_counts, action, max_actions=allowed_actions)
         per_turn_counts[action.id] += 1
         state, narrative = actions.apply_action(state, action.id, rng)
         if narrative:
@@ -260,7 +264,10 @@ def run() -> None:
         return
 
     state = initialise_startup(profile, args.seed)
-    max_actions = 3
+    minimum_limit, maximum_limit = config.ACTION_LIMIT_RANGE
+    max_actions = max(minimum_limit, config.DEFAULT_ACTIONS_PER_TURN)
+    if maximum_limit is not None:
+        max_actions = min(maximum_limit, max_actions)
 
     print(f"\nYou selected: {profile.get('name', 'Unknown Startup')}")
 
@@ -286,7 +293,7 @@ def run() -> None:
                 print("Exiting without saving. Goodbye!")
                 return
 
-            narratives = _apply_actions(state, selections, rng)
+            narratives = _apply_actions(state, selections, rng, max_actions=max_actions)
             _print_messages("Action Outcomes", narratives)
 
             state.balance = finance.apply_monthly_finances(

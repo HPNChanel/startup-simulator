@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from startup_simulator.config import EXPENSE_GROWTH_WEIGHT, REVENUE_GROWTH_WEIGHT
+from startup_simulator import config
 from startup_simulator.startup import Startup
 
 
@@ -15,15 +15,27 @@ def test_compute_company_value_matches_formula() -> None:
         debt=100_000,
     )
 
+    weights = config.COMPANY_VALUE_WEIGHTS
     annual_revenue = startup.monthly_revenue * 12
-    annual_expenses = startup.monthly_expenses * 12
-    expected_base = int(startup.balance + annual_revenue * REVENUE_GROWTH_WEIGHT)
-    expected_penalty = int(annual_expenses * EXPENSE_GROWTH_WEIGHT)
-    qualitative_score = (startup.product_quality + startup.brand_awareness + startup.team_morale) / 3
-    qualitative_bonus = int(qualitative_score * 1_000)
-    expected_value = expected_base - expected_penalty + qualitative_bonus - max(0, startup.debt)
+    revenue_component = annual_revenue * weights["revenue"]
+    market_share_component = startup.users * weights["market_share"]
+    reputation_score = (startup.product_quality + startup.brand_awareness + startup.team_morale) / 3
+    reputation_component = reputation_score * weights["reputation"]
+    team_component = startup.headcount * weights["team_size"]
+    bug_penalty = startup.bug_rate * weights["bug_rate"]
+    expense_penalty = startup.monthly_expenses * 12 * config.COMPANY_EXPENSE_WEIGHT
+    expected_value = (
+        startup.balance
+        + revenue_component
+        + market_share_component
+        + reputation_component
+        + team_component
+        + bug_penalty
+        - expense_penalty
+        - max(0, startup.debt)
+    )
 
-    assert startup.compute_company_value() == max(0, expected_value)
+    assert startup.compute_company_value() == max(0, int(round(expected_value)))
 
 
 def test_compute_company_value_clamps_to_zero() -> None:

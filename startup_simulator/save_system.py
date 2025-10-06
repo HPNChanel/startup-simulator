@@ -10,8 +10,8 @@ from . import config
 from .startup import Startup
 
 
-SCHEMA_VERSION: str = getattr(config, "SAVE_SCHEMA_VERSION", "1.0")
-SAVE_PATH: Path = Path(getattr(config, "AUTOSAVE_FILENAME", "save.json"))
+SCHEMA_VERSION: str = config.SAVE_SCHEMA_VERSION
+SAVE_PATH: Path = getattr(config, "DEFAULT_SAVE_PATH", Path(config.AUTOSAVE_FILENAME))
 _REQUIRED_KEYS: tuple[str, ...] = ("version", "timestamp", "turn", "rng_seed", "startup")
 
 
