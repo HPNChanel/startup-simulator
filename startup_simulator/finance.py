@@ -1,7 +1,14 @@
 """Finance helpers for the Startup Simulator."""
 from __future__ import annotations
 
+import random
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
+
+from . import config
+
+if TYPE_CHECKING:
+    from .startup import Startup
 
 
 @dataclass(slots=True)
@@ -131,6 +138,41 @@ def adjust_expenses_for_regulation(expenses: int, severity: int) -> int:
     return max(0, adjusted)
 
 
+def economy_tick(state: Startup, rng: random.Random) -> None:
+    """Apply a configuration-driven economy jitter to the startup state.
+
+    The hook is disabled by default. Toggle
+    :data:`startup_simulator.config.ECONOMY_TICK_ENABLED` to ``True`` and update
+    :data:`startup_simulator.config.ECONOMY_TICK_REVENUE_VARIANCE` or
+    :data:`startup_simulator.config.ECONOMY_TICK_EXPENSE_VARIANCE` to control the
+    maximum percentage adjustment applied per tick. Because the function relies
+    entirely on the provided :class:`random.Random` instance, deterministic seeds
+    continue to replay exactly when the feature is turned on.
+
+    Args:
+        state: The startup whose monthly revenue and expenses should be nudged.
+        rng: A seeded :class:`random.Random` instance from the simulation loop.
+    """
+
+    if not config.ECONOMY_TICK_ENABLED:
+        return
+
+    revenue_low, revenue_high = config.ECONOMY_TICK_REVENUE_VARIANCE
+    expense_low, expense_high = config.ECONOMY_TICK_EXPENSE_VARIANCE
+
+    if revenue_low > revenue_high:
+        revenue_low, revenue_high = revenue_high, revenue_low
+    if expense_low > expense_high:
+        expense_low, expense_high = expense_high, expense_low
+
+    revenue_multiplier = 1.0 + rng.uniform(revenue_low, revenue_high)
+    expense_multiplier = 1.0 + rng.uniform(expense_low, expense_high)
+
+    state.monthly_revenue = max(0, int(round(state.monthly_revenue * revenue_multiplier)))
+    state.monthly_expenses = max(0, int(round(state.monthly_expenses * expense_multiplier)))
+    state.clamp_all()
+
+
 __all__ = [
     "FinancialSnapshot",
     "calculate_runway",
@@ -139,4 +181,5 @@ __all__ = [
     "apply_monthly_finances",
     "projected_burn",
     "adjust_expenses_for_regulation",
+    "economy_tick",
 ]
