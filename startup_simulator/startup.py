@@ -2,7 +2,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, ClassVar, Dict, Iterable, List, Mapping
+from typing import Any, ClassVar, Dict, Iterable, List, Mapping, Tuple
 
 from . import config
 
@@ -45,23 +45,13 @@ class Startup:
     rng_seed: int = config.DEFAULT_SEED
     active_events: List[str] = field(default_factory=list)
 
-    _INT_FIELDS: ClassVar[Iterable[str]] = (
-        "balance",
-        "monthly_revenue",
-        "monthly_expenses",
-        "users",
-        "headcount",
-        "debt",
-    )
-    _PERCENT_FIELDS: ClassVar[Mapping[str, float]] = {
-        "product_quality": 100.0,
-        "brand_awareness": 100.0,
-        "team_morale": 100.0,
-    }
-    _RATE_FIELDS: ClassVar[Iterable[str]] = ("growth_rate", "churn_rate")
+    _INT_FIELDS: ClassVar[Iterable[str]] = config.STARTUP_INT_FIELDS
+    _INT_BOUNDS: ClassVar[Mapping[str, Tuple[int, int | None]]] = config.STARTUP_INT_BOUNDS
+    _PERCENT_BOUNDS: ClassVar[Mapping[str, Tuple[float, float]]] = config.STARTUP_PERCENT_BOUNDS
+    _RATE_BOUNDS: ClassVar[Mapping[str, Tuple[float, float]]] = config.STARTUP_RATE_BOUNDS
 
     def __post_init__(self) -> None:
-        for field_name in self._INT_FIELDS:
+        for field_name in self._INT_BOUNDS:
             setattr(self, field_name, int(getattr(self, field_name)))
         if not isinstance(self.active_events, list):
             self.active_events = list(self.active_events)
@@ -70,36 +60,76 @@ class Startup:
     def clamp_all(self) -> None:
         """Clamp values to sensible bounds for the simulation."""
 
-        for field_name in self._INT_FIELDS:
-            value = getattr(self, field_name)
-            if value < 0:
-                setattr(self, field_name, 0)
-        for field_name, maximum in self._PERCENT_FIELDS.items():
-            value = getattr(self, field_name)
-            if value < 0:
-                value = 0.0
+        for field_name, bounds in self._INT_BOUNDS.items():
+            if not hasattr(self, field_name):
+                continue
+            minimum, maximum = bounds
+            value = int(getattr(self, field_name))
+            if minimum is not None and value < minimum:
+                value = minimum
+            if maximum is not None and value > maximum:
+                value = maximum
+            setattr(self, field_name, value)
+        for field_name, bounds in self._PERCENT_BOUNDS.items():
+            if not hasattr(self, field_name):
+                continue
+            minimum, maximum = bounds
+            value = float(getattr(self, field_name))
+            if value < minimum:
+                value = minimum
             if value > maximum:
                 value = maximum
             setattr(self, field_name, value)
-        for field_name in self._RATE_FIELDS:
-            value = getattr(self, field_name)
-            value = max(0.0, min(1.0, value))
+        for field_name, bounds in self._RATE_BOUNDS.items():
+            if not hasattr(self, field_name):
+                continue
+            minimum, maximum = bounds
+            value = float(getattr(self, field_name))
+            if value < minimum:
+                value = minimum
+            if value > maximum:
+                value = maximum
             setattr(self, field_name, value)
-        if self.turn < 0:
-            self.turn = 0
 
     def compute_company_value(self) -> int:
         """Estimate the company value using a heuristic formula."""
 
+        weights = config.COMPANY_VALUE_WEIGHTS
+
         annual_revenue = self.monthly_revenue * 12
-        annual_expenses = self.monthly_expenses * 12
-        base_value = int(self.balance + annual_revenue * config.REVENUE_GROWTH_WEIGHT)
-        expense_penalty = int(annual_expenses * config.EXPENSE_GROWTH_WEIGHT)
-        qualitative_score = (self.product_quality + self.brand_awareness + self.team_morale) / 3
-        qualitative_bonus = int(qualitative_score * 1_000)
+        revenue_component = annual_revenue * weights.get("revenue", 0.0)
+        market_share_component = self.users * weights.get("market_share", 0.0)
+        reputation_score = (
+            self.product_quality + self.brand_awareness + self.team_morale
+        ) / 3
+        reputation_component = reputation_score * weights.get("reputation", 0.0)
+        team_component = self.headcount * weights.get("team_size", 0.0)
+        bug_penalty = self.bug_rate * weights.get("bug_rate", 0.0)
+        expense_penalty = self.monthly_expenses * 12 * config.COMPANY_EXPENSE_WEIGHT
         debt_penalty = max(0, self.debt)
-        value = base_value - expense_penalty + qualitative_bonus - debt_penalty
-        return max(0, value)
+
+        value = (
+            self.balance
+            + revenue_component
+            + market_share_component
+            + reputation_component
+            + team_component
+            + bug_penalty
+            - expense_penalty
+            - debt_penalty
+        )
+        return max(0, int(round(value)))
+
+    @property
+    def bug_rate(self) -> float:
+        """Return an estimated bug rate derived from product quality."""
+
+        minimum, maximum = config.METRIC_VALUE_RANGE
+        span = max(1.0, maximum - minimum)
+        quality_ratio = (self.product_quality - minimum) / span
+        low, high = config.PROBABILITY_RANGE
+        quality_ratio = max(low, min(high, quality_ratio))
+        return high - quality_ratio
 
     def recompute_runway(self) -> int:
         """Recalculate and return the months of runway based on current burn."""
@@ -166,7 +196,7 @@ class Startup:
             "rng_seed",
         )
         kwargs = {key: data.get(key, getattr(defaults, key)) for key in keys}
-        for field_name in defaults._INT_FIELDS:
+        for field_name in defaults._INT_BOUNDS:
             if field_name in kwargs:
                 kwargs[field_name] = int(kwargs[field_name])
         instance = cls(**kwargs)

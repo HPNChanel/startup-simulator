@@ -16,7 +16,13 @@ class Metric:
 
     def apply_delta(self, delta: float) -> None:
         """Apply a change to the metric value while keeping it within sensible bounds."""
-        self.value = max(0.0, min(100.0, self.value + delta))
+        minimum, maximum = config.METRIC_VALUE_RANGE
+        updated = self.value + delta
+        if minimum is not None:
+            updated = max(minimum, updated)
+        if maximum is not None:
+            updated = min(maximum, updated)
+        self.value = updated
 
 
 @dataclass(slots=True)
@@ -31,7 +37,7 @@ class PlayerState:
 
     def record_action(self, action_key: str) -> None:
         """Record that the player has taken the specified action this turn."""
-        if len(self.actions_taken) >= config.MAX_ACTIONS_PER_TURN:
+        if len(self.actions_taken) >= config.DEFAULT_ACTIONS_PER_TURN:
             raise ValueError("Action limit reached for this turn.")
         self.actions_taken.append(action_key)
 

@@ -33,6 +33,18 @@ class GameEvent:
 # Event loading helpers
 
 
+def _clamp_probability(value: float) -> float:
+    low, high = config.PROBABILITY_RANGE
+    return max(low, min(high, value))
+
+
+def _normalize_metric(value: float) -> float:
+    minimum, maximum = config.METRIC_VALUE_RANGE
+    span = max(1.0, maximum - minimum)
+    normalised = (value - minimum) / span
+    return _clamp_probability(normalised)
+
+
 def _build_effect_callable(effects: Mapping[str, float] | None) -> Callable[[Startup], None]:
     """Create a callable that applies *effects* to a :class:`Startup` instance."""
 
@@ -55,7 +67,7 @@ def _coerce_event(data: Mapping[str, Any]) -> GameEvent:
     narrative = data.get("narrative") or data.get("description") or ""
 
     trigger_chance = float(data.get("trigger_chance") or data.get("probability") or 0.0)
-    trigger_chance = max(0.0, min(1.0, trigger_chance))
+    trigger_chance = _clamp_probability(trigger_chance)
 
     duration = data.get("duration_turns") or data.get("duration") or data.get("turns") or 1
     duration_turns = max(1, int(duration))
@@ -216,19 +228,20 @@ def _state_adjusted_chance(startup: Startup, event: GameEvent) -> float:
     base_chance = event.trigger_chance * config.EVENT_PROBABILITY_WEIGHT
 
     if event.id == "server_crash":
-        bug_pressure = max(0.0, 1.0 - startup.product_quality / 100)
+        bug_pressure = _clamp_probability(1.0 - _normalize_metric(startup.product_quality))
         base_chance += bug_pressure * 0.25
     elif event.id == "pr_boost":
-        reputation = startup.brand_awareness / 100
+        reputation = _normalize_metric(startup.brand_awareness)
         base_chance += reputation * 0.2
     elif event.id == "talent_poached":
-        morale_gap = max(0.0, (75.0 - startup.team_morale) / 100)
+        morale_ratio = _normalize_metric(startup.team_morale)
+        morale_gap = _clamp_probability(max(0.0, 0.75 - morale_ratio))
         base_chance += morale_gap * 0.15
     elif event.id == "customer_uprising":
-        happy_customers = max(0.0, startup.product_quality / 100)
+        happy_customers = _normalize_metric(startup.product_quality)
         base_chance += happy_customers * 0.12
 
-    return max(0.0, min(1.0, base_chance))
+    return _clamp_probability(base_chance)
 
 
 def maybe_trigger_event(startup: Startup, rng: random.Random) -> Tuple[Startup, List[str]]:

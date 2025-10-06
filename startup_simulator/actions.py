@@ -185,8 +185,12 @@ def list_actions(startup: Startup) -> list[Action]:
 
 def _clamp_turn_limit(limit: int | None) -> int:
     if limit is None:
-        limit = config.MAX_ACTIONS_PER_TURN
-    return max(1, min(3, limit))
+        limit = config.DEFAULT_ACTIONS_PER_TURN
+    minimum, maximum = config.ACTION_LIMIT_RANGE
+    limit = max(minimum, limit)
+    if maximum is not None:
+        limit = min(maximum, limit)
+    return limit
 
 
 def validate_action_limit(

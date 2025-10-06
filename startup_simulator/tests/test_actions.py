@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import random
 
-from startup_simulator import actions
+from startup_simulator import actions, config
 from startup_simulator.startup import Startup
 from startup_simulator.tests.utils import PatchManager, expect_raises
 
@@ -45,7 +45,8 @@ def test_apply_action_deducts_cost_and_clamps() -> None:
         updated, narrative = actions.apply_action(state, "clamp_test", random.Random(1))
 
     assert updated.balance == 500
-    assert updated.product_quality == 100.0
+    max_quality = config.STARTUP_PERCENT_BOUNDS["product_quality"][1]
+    assert updated.product_quality == max_quality
     assert narrative == "Testing narrative."
 
 
