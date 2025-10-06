@@ -1,10 +1,50 @@
 [
   {
-    "name": "Nimbus Analytics",
+    "name": "Lean FinTech",
+    "description": "Bootstrap-minded financial tools team with disciplined spending.",
     "metrics": {
-      "morale": 70,
-      "product": 60,
-      "brand": 40
+      "balance": 350000,
+      "monthly_revenue": 38000,
+      "monthly_expenses": 70000,
+      "users": 1200,
+      "growth_rate": 0.09,
+      "churn_rate": 0.035,
+      "product_quality": 58.0,
+      "brand_awareness": 45.0,
+      "team_morale": 72.0,
+      "headcount": 14
+    }
+  },
+  {
+    "name": "Growth Hacker",
+    "description": "Scrappy consumer app chasing aggressive top-line momentum.",
+    "metrics": {
+      "balance": 420000,
+      "monthly_revenue": 52000,
+      "monthly_expenses": 130000,
+      "users": 2100,
+      "growth_rate": 0.12,
+      "churn_rate": 0.05,
+      "product_quality": 55.0,
+      "brand_awareness": 50.0,
+      "team_morale": 68.0,
+      "headcount": 20
+    }
+  },
+  {
+    "name": "Enterprise B2B",
+    "description": "Sales-led platform targeting large, contract-heavy accounts.",
+    "metrics": {
+      "balance": 600000,
+      "monthly_revenue": 70000,
+      "monthly_expenses": 140000,
+      "users": 800,
+      "growth_rate": 0.05,
+      "churn_rate": 0.025,
+      "product_quality": 65.0,
+      "brand_awareness": 35.0,
+      "team_morale": 74.0,
+      "headcount": 24
     }
   }
 ]
